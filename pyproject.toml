@@ -8,6 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.13"
+pyglet = "^2.0.20"
 
 
 [build-system]
