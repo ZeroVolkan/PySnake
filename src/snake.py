@@ -68,11 +68,13 @@ class Snake:
             part.body.x += transform[0]
             part.body.y += transform[1]
 
-            part.direction, new_direction= new_direction, part.direction
-
+            part.direction, new_direction = new_direction, part.direction
 
     def draw(self):
         self.head.draw()
 
         for part in self.parts:
             part.body.draw()
+
+    def position(self):
+        return self.head.x, self.head.y

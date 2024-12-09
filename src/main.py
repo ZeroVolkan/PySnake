@@ -1,24 +1,25 @@
 import pyglet as pg
 
 from snake import Direction, Snake
-from pyglet.window import key
+from apple import Apples
 
-window = pg.window.Window(1280, 720)
+x, y = 48, 24
+side = 40
+
+window = pg.window.Window(x * side, y * side)
 batch = pg.graphics.Batch()
-snake = Snake(8, 8, 40, batch)
-apple_test = False
+snake = Snake(x // 2, y // 2, side, batch)
+apples = Apples(x, y, side)
+
 
 @window.event
 def on_key_press(symbol, modifiers):
     snake.direction = direction if (direction := Direction.from_key(symbol)) != Direction.none else snake.direction
-    if key.G == symbol:
-        global apple_test
-        apple_test = not apple_test
 
 
 @window.event
 def on_draw():
-    snake.move(apple_test)
+    snake.move()
     window.clear()
     snake.draw()
 
