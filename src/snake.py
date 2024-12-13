@@ -78,3 +78,11 @@ class Snake:
 
     def position(self):
         return self.head.x, self.head.y
+
+    def check_me(self):
+        x, y = self.position()
+
+        for part in self.parts:
+            if part.body.x == x and part.body.y == y:
+                return False
+        return True

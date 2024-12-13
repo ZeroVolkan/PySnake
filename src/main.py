@@ -1,3 +1,4 @@
+from tabnanny import check
 import pyglet as pg
 
 from snake import Direction, Snake
@@ -19,9 +20,14 @@ def on_key_press(symbol, modifiers):
 # GAME LOOP
 @window.event
 def on_draw():
+    if not snake.check_me():
+        print("GAME OVER")
+
+
+
     if apples.collision(*snake.position()):
-        apples.remove(*map(lambda i: i // 40, snake.position()))
-        snake.move(True)
+        apples.remove(*map(lambda i: i // side, snake.position()))
+        snake.move(apple=True)
         apples.generate()
     else:
         snake.move()
