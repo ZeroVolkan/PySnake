@@ -11,15 +11,28 @@ from menu import Menu
 class StateGame(Enum):
     menu = 0
     play = 1
-    init_menu = 2
-    init_play = 3
+
+    def change(self):
+        match self:
+            case StateGame.menu:
+                self = StateGame(1)
+                init_play()
+            case StateGame.play:
+                self = StateGame(0)
+                init_menu()
+            case _:
+                self = StateGame(0)
+                init_menu()
+
+        return self
+
 
 
 x, y = 48, 24
 side = 40
 
 window = pg.window.Window(x * side, y * side)
-state = StateGame(2)
+state = StateGame(0)
 
 
 # STARUP
@@ -41,51 +54,45 @@ def init_menu():
 @window.event
 def on_key_press(symbol, modifiers):
     global state, menu
-    snake.direction = direction if (direction := Direction.from_key(symbol)) != Direction.none else snake.direction
 
-    if symbol == key.R:
-        init_play()
-    if symbol == key.ENTER:
-        init_play()
-        state = state.play
+    match state:
+        case state.menu:
+            if symbol == key.ENTER:
+                if menu.chosen == 0:
+                    state = state.change()
+                elif menu.chosen == 1:
+                    pass
+                elif menu.chosen == 2:
+                    pg.app.exit()
 
-    if state == state.menu:
-        print(menu.chosen)
-        if symbol == key.W:
-            menu.up()
-        if symbol == key.S:
-            menu.down()
+            if symbol == key.W or symbol == key.UP:
+                menu.up()
+            elif symbol == key.S or symbol == key.DOWN:
+                menu.down()
+            return
 
+        case state.play:
+            snake.direction = direction if (direction := Direction.from_key(symbol)) != Direction.none else snake.direction
+            return
 
 # GAME LOOP
 @window.event
 def on_draw():
     global state, menu
 
-
     match state:
         case state.play:
-            if is_over():
-                print("GAME OVER")
-                state = state.menu
-
             eat_and_move()
-            draw_play()
+            draw()
+
+            if is_over():
+                state = state.change()
 
         case state.menu:
             menu.draw()
 
-        case state.init_play:
-            state = state.play
-            init_play()
 
-        case state.init_menu:
-            state = state.menu
-            init_menu()
-
-
-
-def draw_play():
+def draw():
     window.clear()
     apples.draw()
     snake.draw()
@@ -106,13 +113,13 @@ def is_over():
     if not snake.check_me():
         return True
 
-    print(window.width, window.height, xsnake, ysnake)
-    if not (0 < xsnake < window.width) or not (0 < ysnake < window.height):
+    if not (0 <= xsnake < window.width) or not (0 <= ysnake < window.height):
         return True
 
     return False
 
 
 if __name__  == "__main__":
-    init_play()
+    state = state.menu
+    init_menu()
     pg.app.run(interval=0.1)

@@ -1,10 +1,8 @@
 import pyglet as pg
-from enum import Enum
-
 
 
 class Menu:
-    text = {
+    _text = {
         0: "Start",
         1: "Settings",
         2: "Exit"
@@ -17,7 +15,7 @@ class Menu:
         self.chosen = 0
 
     def draw(self):
-        for position, text in self.text.items():
+        for position, text in self._text.items():
             label = pg.text.Label(
                 text,
                 font_name='League Spartan',
@@ -31,14 +29,14 @@ class Menu:
 
     def up(self):
         if self.chosen <= 0:
-            self.chosen = max(self.text.keys())
+            self.chosen = max(self._text.keys())
         else:
             self.chosen -= 1
 
     def down(self):
-        if self.chosen >= max(self.text.keys()):
+        if self.chosen >= max(self._text.keys()):
             self.chosen = -1
         self.chosen += 1
 
     def get(self):
-        pass
+        return self._text[self.chosen]
