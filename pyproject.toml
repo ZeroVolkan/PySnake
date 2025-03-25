@@ -1,16 +1,9 @@
-[tool.poetry]
+[project]
 name = "pysnake"
 version = "0.1.0"
-description = ""
-authors = ["volkan"]
+description = "Add your description here"
 readme = "README.md"
-
-
-[tool.poetry.dependencies]
-python = "^3.13"
-pyglet = "^2.0.20"
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires-python = ">=3.13"
+dependencies = [
+    "pyglet>=2.1.3",
+]
