@@ -6,6 +6,7 @@ from pyglet.window import key
 
 
 class Direction(Enum):
+    "Направление движения змейки"
     up    = 0, 1
     down  = 0, -1
     right = 1, 0
@@ -14,6 +15,7 @@ class Direction(Enum):
 
     @classmethod
     def from_key(cls, symbol):
+        "Превращает символ в направление движения змейки"
         match symbol:
             case key.W:
                 return cls.up
@@ -32,11 +34,16 @@ class Direction(Enum):
 
 @dataclass
 class SnakePart:
+    "Часть змейки"
     body: pg.shapes.Rectangle
     direction: Direction
 
 
 class Snake:
+    """x, y указывает на координаты головы змейки,
+    side - размер квадратной клетки,
+    batch - пакет для рисования,
+    direction - направление движения змейки"""
     def __init__(self, x: int, y: int, side: int, batch: pg.graphics.Batch, direction=Direction.none) -> None:
         self.head = pg.shapes.Rectangle(x * side, y * side, side, side, batch=batch)
         self.parts: list[SnakePart] = []
