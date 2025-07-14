@@ -2,8 +2,8 @@ from enum import Enum
 from typing import Callable
 from collections import namedtuple
 
-import pyglet as pg
 
+import pyglet as pg
 
 class Select(Enum):
     GENERAL = 0

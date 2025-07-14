@@ -1,117 +1,125 @@
+from __future__ import annotations
+from abc import ABC
 import pyglet as pg
 
 from pyglet.window import key
-from enum import Enum
 
 from snake import Direction, Snake
 from apple import Apples
 from menu import Menu, Select
 from sys import exit
 
-
-class State(Enum):
-    menu = 0
-    play = 1
-
-x, y = 48, 24
-side = 40
-
-window = pg.window.Window(x * side, y * side)
-state = State(0)
-
-def change():
-    global state
-    state = State(1) if state.value == 0 else State(0)
-    if state == State.play:
-        init_play()
-    else:
-        init_menu()
+from abc import ABC, abstractmethod
 
 
-# STARUP
-def init_play():
-    global snake, apples, batch
-    batch = pg.graphics.Batch()
-    snake = Snake(x // 2, y // 2, side, batch)
-    apples = Apples(x, y, side, batch)
-    [apples.generate() for i in range(4)]
+class Game():
+    def __init__(self, x, y, side):
+        self.window = pg.window.Window(x * side, y * side)
+        self.batch = pg.graphics.Batch()
+
+        self.x, self.y = x, y
+        self.side = side
+
+        self.state: StateGame = StateMenu(self)
+        self.set_state(self.state)
+
+    def set_state(self, state: StateGame):
+        self.state = state
+        self.eventing()
+
+    def eventing(self):
+        self.window.set_handlers(
+            on_key_press=self.state.on_key_press,
+            on_draw=self.state.on_draw
+        )
 
 
-def init_menu():
-    global menu, batch, state
+class StateGame(ABC):
+    def __init__(self, game: Game):
+        self.game: Game = game
 
-    batch = pg.graphics.Batch()
-    menu = Menu(window, 75, batch)
+    @abstractmethod
+    def on_key_press(self, symbol, modifiers):
+        ...
 
-    menu.bind(Select.GENERAL, 0, lambda: change())
-    menu.bind(Select.GENERAL, 2, lambda: exit(0))
+    @abstractmethod
+    def on_draw(self):
+        ...
 
+class StateMenu(StateGame):
+    def __init__(self, game):
+        self.game = game
+        self.menu = Menu(self.game.window, 75, self.game.batch)
+        self._bind()
 
-# INPUT KEYBOARD
-@window.event
-def on_key_press(symbol, modifiers):
-    global state, menu
+    def _bind(self):
+        self.menu.bind(Select.GENERAL, 0, lambda: self._change())
+        self.menu.bind(Select.GENERAL, 2, lambda: exit(0))
 
-    match state:
-        case State.menu:
-            if symbol == key.ENTER:
-                menu.use()
-            if symbol == key.W or symbol == key.UP:
-                menu.up()
-            elif symbol == key.S or symbol == key.DOWN:
-                menu.down()
-            return
+    def _change(self):
+        self.game.set_state(StatePlay(self.game))
 
-        case State.play:
-            snake.direction = direction if (direction := Direction.from_key(symbol)) != Direction.none else snake.direction
-            return
+    def on_key_press(self, symbol, modifiers):
+        if symbol == key.ENTER:
+            self.menu.use()
+        elif symbol == key.W or symbol == key.UP:
+            self.menu.up()
+        elif symbol == key.S or symbol == key.DOWN:
+            self.menu.down()
 
-# GAME LOOP
-@window.event
-def on_draw():
-    global state, menu
+    def on_draw(self):
+        self.game.window.clear()
+        self.menu.draw()
+        self.game.window.flip()
 
-    match state:
-        case state.play:
-            eat_and_move()
-            draw()
-
-            if is_over():
-                change()
-
-        case state.menu:
-            window.clear()
-            menu.draw()
+class StatePlay(StateGame):
+    def __init__(self, game):
+        self.game = game
+        self.snake = Snake(24, 12, 40, self.game.batch)
+        self.apples = Apples(48, 24, 40, self.game.batch)
 
 
-def draw():
-    window.clear()
-    apples.draw()
-    snake.draw()
+
+        [self.apples.generate() for i in range(4)]
+
+    def on_key_press(self, symbol, modifiers):
+        if symbol == key.ESCAPE:
+            self.game.set_state(StateMenu(self.game))
+
+        if (direction := Direction.from_key(symbol)) != Direction.none:
+            self.snake.direction = direction
+
+    def on_draw(self):
+        self.game.window.clear()
+
+        self.snake.draw()
+        self._eat_and_move()
+        if self._is_over():
+            self.game.set_state(StateMenu(self.game))
+
+        self.apples.draw()
 
 
-def eat_and_move():
-    if apples.collision(*snake.position()):
-        apples.remove(*map(lambda i: i // side, snake.position()))
-        snake.move(apple=True)
-        apples.generate()
-    else:
-        snake.move()
+    def _eat_and_move(self):
+        if self.apples.collision(*self.snake.position()):
+            self.apples.remove(*map(lambda i: i // self.game.side, self.snake.position()))
+            self.snake.move(apple=True)
+            self.apples.generate()
+        else:
+            self.snake.move()
 
+    def _is_over(self):
+        xsnake, ysnake = self.snake.position()
 
-def is_over():
-    xsnake, ysnake = snake.position()
+        if not self.snake.check_me():
+            return True
 
-    if not snake.check_me():
-        return True
+        if not (0 <= xsnake < self.game.window.width) or not (0 <= ysnake < self.game.window.height):
+            return True
 
-    if not (0 <= xsnake < window.width) or not (0 <= ysnake < window.height):
-        return True
-
-    return False
+        return False
 
 
 if __name__  == "__main__":
-    state = state.menu
-    init_menu()
+    game = Game(48, 24, 40)
     pg.app.run(interval=0.1)
