@@ -2,8 +2,39 @@ from enum import Enum
 from typing import Callable
 from collections import namedtuple
 
-
 import pyglet as pg
+
+from pyglet.window import key
+from state import StateGame
+
+class StateMenu(StateGame):
+    def __init__(self, game):
+        self.game = game
+        self.menu = Menu(self.game.window, 75, self.game.batch)
+        self._bind()
+
+
+    def _bind(self):
+        self.menu.bind(Select.GENERAL, 0, lambda: self._change())
+        self.menu.bind(Select.GENERAL, 2, lambda: exit(0))
+
+    def _change(self):
+        from play import StatePlay
+        self.game.set_state(StatePlay(self.game))
+
+    def on_key_press(self, symbol, modifiers):
+        if symbol == key.ENTER:
+            self.menu.use()
+        elif symbol == key.W or symbol == key.UP:
+            self.menu.up()
+        elif symbol == key.S or symbol == key.DOWN:
+            self.menu.down()
+
+    def on_draw(self):
+        self.game.window.clear()
+        self.menu.draw()
+        self.game.window.flip()
+
 
 class Select(Enum):
     GENERAL = 0
