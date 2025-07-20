@@ -1,26 +1,30 @@
+from __future__ import annotations
 from enum import Enum
 from typing import Callable
-from collections import namedtuple
 
 import pyglet as pg
 
 from pyglet.window import key
 from state import StateGame
 
+
 class StateMenu(StateGame):
     def __init__(self, game):
         self.game = game
-        self.menu = Menu(self.game.window, 75, self.game.batch)
+        self.menu: Menu = Menu(self.game.window, 75)
         self._bind()
 
-
     def _bind(self):
-        self.menu.bind(Select.GENERAL, 0, lambda: self._change())
-        self.menu.bind(Select.GENERAL, 2, lambda: exit(0))
+        self.menu.bind(Select.GENERAL, 0, self._to_play)
+        self.menu.bind(Select.GENERAL, 1, self._to_settings)
+        self.menu.bind(Select.GENERAL, 2, exit)
 
-    def _change(self):
+    def _to_play(self):
         from play import StatePlay
         self.game.set_state(StatePlay(self.game))
+
+    def _to_settings(self):
+        self.menu.change_select(Select.SETTINGS)
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.ENTER:
@@ -33,61 +37,58 @@ class StateMenu(StateGame):
     def on_draw(self):
         self.game.window.clear()
         self.menu.draw()
-        self.game.window.flip()
 
 
 class Select(Enum):
     GENERAL = 0
     SETTINGS = 1
 
-Choose = namedtuple("Choose", ["name", "callable"])
+class Choose:
+    def __init__(self, name: str, callback: Callable | None = None):
+        self.name = name
+        self.callback = callback
 
 defaultMenu: dict[Select, dict[int, Choose]] = {
     Select.GENERAL: {
-        0: Choose("Start", None),
-        1: Choose("Settings", None),
-        2: Choose("Exit", None)
+        0: Choose("Start"),
+        1: Choose("Settings"),
+        2: Choose("Exit")
     },
     Select.SETTINGS: {
-        0: Choose("Return", None),
-        1: Choose("...", None),
+        0: Choose("Return"),
+        1: Choose("..."),
     }
 }
 
 class Menu:
-    def __init__(self, window, side, batch, pattern=defaultMenu, default: bool=True):
+    def __init__(self, window, side, pattern=defaultMenu):
         self.menu = pattern
 
-        self.batch = batch
+        self.batch = pg.graphics.Batch()
         self.window = window
         self.side = side
 
         self.select = Select.GENERAL
         self.chosen = 0
 
-        if default:
-            self.bind(
-                Select.GENERAL, 1,
-                lambda: self.change_select(Select.SETTINGS)
-            )
-
-            self.bind(
-                Select.SETTINGS, 0,
-                lambda: self.change_select(Select.GENERAL)
-            )
-
-    def draw(self):
-        for position, choose in self.menu[self.select].items():
-            label = pg.text.Label(
+        self.labels = [
+            pg.text.Label(
                 choose.name,
                 font_name='League Spartan',
                 font_size=36,
-                x = self.window.width // 2, y = self.window.height - self.window.height // 4 - self.side * position,
+                x = self.window.width // 2,
+                y = self.window.height - self.window.height // 4 - self.side * idx,
                 anchor_x='center', anchor_y='center',
-                color = (255, 0, 0) if position == self.chosen else (255, 255, 255)
+                color = (255, 255, 255, 255),
+                batch=self.batch
             )
+            for idx, (position, choose) in enumerate(sorted(self.menu[self.select].items()))
+        ]
 
-            label.draw()
+    def draw(self):
+        self.labels[self.chosen].color = (255, 0, 0, 255)
+        self.batch.draw()
+        self.labels[self.chosen].color = (255, 255, 255, 255)
 
     def up(self):
         if self.chosen <= 0:
@@ -108,16 +109,10 @@ class Menu:
         self.chosen = 0
 
     def use(self):
-        self.menu[self.select][self.chosen].callable()
+        if self.menu[self.select][self.chosen].callback:
+            self.menu[self.select][self.chosen].callback()
+        else:
+            print("Don't have method")
 
-    def bind(self, select: Select, choose: int, callable: Callable):
-        self.menu[select][choose] = Choose(
-            self.menu[select][choose].name,
-            callable
-        )
-
-    def unbind(self, select: Select, choose: int):
-        self.menu[select][choose] = Choose(
-            self.menu[select][choose].name,
-            None
-        )
+    def bind(self, select: Select, choose: int, callback: Callable):
+        self.menu[select][choose].callback = callback
