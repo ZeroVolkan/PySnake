@@ -4,7 +4,7 @@ import random as rm
 class Apples:
     "Создает поле со сторонами xlen и ylen, side указывает на размер яблока"
     def __init__(self, xlen, ylen, side, batch):
-        self.apples: list[tuple[int, int]] = []
+        self.apples: list[pg.shapes.Rectangle] = []
 
         self.xlen = xlen
         self.ylen = ylen
@@ -14,18 +14,29 @@ class Apples:
 
     def collision(self, x, y) -> bool:
         "Проверяет столкновение с яблоком"
-        for apple in self.apples:
-            if apple[0] * self.side == x and apple[1] * self.side == y:
+        for rect in self.apples:
+            if rect.x == x * self.side and rect.y == y * self.side:
                 return True
         return False
 
     def remove(self, x, y) -> None:
         "Удаляет яблоко по координатам"
-        self.apples.remove((x, y))
+        for i, rect in enumerate(self.apples):
+            if rect.x == x * self.side and rect.y == y * self.side:
+                rect.delete()
+                self.apples.pop(i)
+                break
 
     def add(self, x, y) -> None:
         """Добавляет яблоко по координатам"""
-        self.apples.append((x, y))
+        rect = pg.shapes.Rectangle(
+            x * self.side, y * self.side,
+            self.side, self.side,
+            batch=self.batch,
+            color=(255, 0, 0)
+        )
+
+        self.apples.append(rect)
 
     def generate(self) -> None:
         """Генерирует яблоко на поле со сторонами xlen и ylen"""
@@ -33,16 +44,9 @@ class Apples:
             x, y = rm.randint(0, self.xlen), rm.randint(0, self.ylen)
             if self.collision(x, y):
                 continue
-            self.add(rm.randint(0, self.xlen), rm.randint(0, self.ylen))
+            self.add(x, y)
 
             break
 
     def draw(self):
-        for apple in self.apples:
-            pg.shapes.Rectangle(
-                apple[0] * self.side, apple[1] * self.side,
-                self.side,
-                self.side,
-                batch=self.batch,
-                color=(255, 0, 0)
-            ).draw()
+        self.batch.draw()

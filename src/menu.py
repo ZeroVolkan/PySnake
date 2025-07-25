@@ -42,6 +42,7 @@ class StateMenu(StateGame):
 class Select(Enum):
     GENERAL = 0
     SETTINGS = 1
+    EXIT = 2
 
 class Choose:
     def __init__(self, name: str, callback: Callable | None = None):

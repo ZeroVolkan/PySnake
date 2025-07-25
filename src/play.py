@@ -26,17 +26,18 @@ class StatePlay(StateGame):
     def on_draw(self):
         self.game.window.clear()
 
-        self.snake.draw()
+        self.apples.draw()
         self._eat_and_move()
+        self.snake.draw()
         if self._is_over():
             self.game.set_state(StateGameOver(self.game))
 
-        self.apples.draw()
-
 
     def _eat_and_move(self):
-        if self.apples.collision(*self.snake.position()):
-            self.apples.remove(*map(lambda i: i // self.game.side, self.snake.position()))
+        grid = self.snake.position_grid()
+
+        if self.apples.collision(*grid):
+            self.apples.remove(*grid)
             self.snake.move(apple=True)
             self.apples.generate()
         else:

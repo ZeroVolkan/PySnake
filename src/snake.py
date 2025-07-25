@@ -86,6 +86,9 @@ class Snake:
     def position(self):
         return self.head.x, self.head.y
 
+    def position_grid(self):
+        return tuple(map(lambda i: i // self.side, self.position()))
+
     def check_me(self):
         x, y = self.position()
 
