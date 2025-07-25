@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pyglet.window import key
+import pyglet as pg
 
 from apple import Apples
 from snake import Snake, Direction
@@ -11,8 +12,12 @@ from game_over import StateGameOver
 class StatePlay(StateGame):
     def __init__(self, game):
         self.game = game
-        self.snake = Snake(24, 12, game.side, self.game.batch)
-        self.apples = Apples(48, 24, game.side, self.game.batch)
+
+        self.foreground = pg.graphics.Group(order=1)
+        self.background = pg.graphics.Group(order=0)
+
+        self.snake = Snake(24, 12, game.side, self.game.batch, group=self.foreground)
+        self.apples = Apples(48, 24, game.side, self.game.batch, group=self.background)
 
         [self.apples.generate() for i in range(4)]
 
@@ -20,17 +25,20 @@ class StatePlay(StateGame):
         if symbol == key.ESCAPE:
             self.game.set_state(StateMenu(self.game))
 
-        if (direction := Direction.from_key(symbol)) != Direction.none:
-            self.snake.direction = direction
+        if (direction := Direction.from_key(symbol)) == Direction.none:
+            return
+        if direction == self.snake.direction.reverse():
+            return
+        self.snake.direction = direction
 
     def on_draw(self):
         self.game.window.clear()
-
-        self.apples.draw()
         self._eat_and_move()
-        self.snake.draw()
+        self.game.batch.draw()
+
         if self._is_over():
             self.game.set_state(StateGameOver(self.game))
+
 
 
     def _eat_and_move(self):

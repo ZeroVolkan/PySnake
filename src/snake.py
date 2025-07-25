@@ -31,6 +31,9 @@ class Direction(Enum):
     def multiply(self, by) -> tuple[int, int]:
         return self.value[0] * by, self.value[1] * by
 
+    def reverse(self):
+        return Direction(-self.value[0], -self.value[1])
+
 
 @dataclass
 class SnakePart:
@@ -44,10 +47,11 @@ class Snake:
     side - размер квадратной клетки,
     batch - пакет для рисования,
     direction - направление движения змейки"""
-    def __init__(self, x: int, y: int, side: int, batch: pg.graphics.Batch, direction=Direction.none) -> None:
-        self.head = pg.shapes.Rectangle(x * side, y * side, side, side, batch=batch)
-        self.parts: list[SnakePart] = []
+    def __init__(self, x: int, y: int, side: int, batch: pg.graphics.Batch, direction=Direction.none, group: pg.graphics.Group | None=None) -> None:
         self.batch: pg.graphics.Batch = batch
+        self.group: pg.graphics.Group | None = group
+        self.head = pg.shapes.Rectangle(x * side, y * side, side, side, batch=batch, group=group)
+        self.parts: list[SnakePart] = []
         self.side: int = side
         self.direction: Direction = direction
 
@@ -57,8 +61,8 @@ class Snake:
         if apple:
             self.parts.append(
                 SnakePart(
-                    pg.shapes.Rectangle(self.head.x, self.head.y, self.side, self.side, batch=self.batch),
-                    self.direction
+                    pg.shapes.Rectangle(self.head.x, self.head.y, self.side, self.side, batch=self.batch, group=self.group),
+                    self.direction,
                 )
             )
 
@@ -78,10 +82,7 @@ class Snake:
             part.direction, new_direction = new_direction, part.direction
 
     def draw(self):
-        self.head.draw()
-
-        for part in self.parts:
-            part.body.draw()
+        self.batch.draw()
 
     def position(self):
         return self.head.x, self.head.y

@@ -3,7 +3,7 @@ import random as rm
 
 class Apples:
     "Создает поле со сторонами xlen и ylen, side указывает на размер яблока"
-    def __init__(self, xlen, ylen, side, batch):
+    def __init__(self, xlen: int, ylen: int, side: int, batch: pg.graphics.Batch, group: pg.graphics.Group | None=None):
         self.apples: list[pg.shapes.Rectangle] = []
 
         self.xlen = xlen
@@ -11,6 +11,7 @@ class Apples:
         self.side = side
 
         self.batch = batch
+        self.group = group
 
     def collision(self, x, y) -> bool:
         "Проверяет столкновение с яблоком"
@@ -33,6 +34,7 @@ class Apples:
             x * self.side, y * self.side,
             self.side, self.side,
             batch=self.batch,
+            group=self.group,
             color=(255, 0, 0)
         )
 
