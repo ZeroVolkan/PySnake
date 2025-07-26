@@ -4,7 +4,8 @@ xlen = 40
 ylen = 20
 side = 60
 # Game settings (Not work yet)
-moving_per_frame = 10
-end_moving_per_frame = 1
-per_apple = 5
+fps = 60
+start_apples = 5
+moving_per_second = 10
+speed_per_apple = 0.5
 change = -1

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pyglet as pg
+
 from state import StateGame
 from menu import StateMenu
 from setting import Setting
@@ -14,6 +15,8 @@ class Game():
 
         self.window = pg.window.Window(self.xlen * self.side, self.ylen * self.side)
         self.batch = pg.graphics.Batch()
+
+        self.fps = self.settings.data["fps"]
 
         self.state: StateGame = StateMenu(self)
 
@@ -34,7 +37,7 @@ class Game():
             self.state.on_draw()
 
     def run(self):
-        pg.app.run(interval=0.1)
+        pg.app.run(1 / self.fps)
 
 
 if __name__ == "__main__":
