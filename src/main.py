@@ -3,15 +3,17 @@ from __future__ import annotations
 import pyglet as pg
 from state import StateGame
 from menu import StateMenu
-
+from setting import Setting
 
 class Game():
-    def __init__(self, x, y, side):
-        self.window = pg.window.Window(x * side, y * side)
-        self.batch = pg.graphics.Batch()
+    def __init__(self, setting):
+        self.settings = Setting('setting.toml')
 
-        self.x, self.y = x, y
-        self.side = side
+        self.xlen, self.ylen = self.settings.data["xlen"], self.settings.data["ylen"]
+        self.side = self.settings.data["side"]
+
+        self.window = pg.window.Window(self.xlen * self.side, self.ylen * self.side)
+        self.batch = pg.graphics.Batch()
 
         self.state: StateGame = StateMenu(self)
 
@@ -38,5 +40,5 @@ class Game():
 if __name__ == "__main__":
     pg.font.load('League Spartan')
 
-    game = Game(48, 24, 60)
+    game = Game(Setting("setting.toml"))
     game.run()

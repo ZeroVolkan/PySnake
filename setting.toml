@@ -1,9 +1,9 @@
 # Configuration settings for PySnake game
 # Resolution settings
-xlen = 48
-ylen = 24
-side = 40
-# Game settings
+xlen = 40
+ylen = 20
+side = 60
+# Game settings (Not work yet)
 moving_per_frame = 10
 end_moving_per_frame = 1
 per_apple = 5
