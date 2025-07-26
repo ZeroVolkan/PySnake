@@ -1,7 +1,6 @@
 import pyglet as pg
 
-from state import StateGame
-from menu import StateMenu
+from state import StateGame, StateEnum
 
 
 class GameOver:
@@ -38,10 +37,9 @@ class StateGameOver(StateGame):
 
     def on_key_press(self, symbol, modifiers):
         if symbol == pg.window.key.R:
-            from play import StatePlay
-            self.game.set_state(StatePlay(self.game))
+            self.game.set_state(StateEnum.play)
         elif symbol == pg.window.key.ENTER:
-            self.game.set_state(StateMenu(self.game))
+            self.game.set_state(StateEnum.menu)
 
     def on_draw(self):
         self.game.window.clear()

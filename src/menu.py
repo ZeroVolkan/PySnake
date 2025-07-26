@@ -5,7 +5,7 @@ from typing import Callable
 import pyglet as pg
 
 from pyglet.window import key
-from state import StateGame
+from state import StateGame, StateEnum
 
 
 class StateMenu(StateGame):
@@ -20,8 +20,7 @@ class StateMenu(StateGame):
         self.menu.bind(Select.GENERAL, 2, exit)
 
     def _to_play(self):
-        from play import StatePlay
-        self.game.set_state(StatePlay(self.game))
+        self.game.set_state(StateEnum.play)
 
     def _to_settings(self):
         self.menu.change_select(Select.SETTINGS)

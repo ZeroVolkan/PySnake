@@ -5,9 +5,7 @@ import pyglet as pg
 
 from apple import Apples
 from snake import Snake, Direction
-from state import StateGame
-from menu import StateMenu
-from game_over import StateGameOver
+from state import StateGame, StateEnum
 
 class StatePlay(StateGame):
     def __init__(self, game):
@@ -30,7 +28,7 @@ class StatePlay(StateGame):
 
     def on_key_press(self, symbol, modifiers):
         if symbol == key.ESCAPE:
-            self.game.set_state(StateMenu(self.game))
+            self.game.set_state(StateEnum.menu)
 
         if (direction := Direction.from_key(symbol)) == Direction.none:
             return
@@ -50,7 +48,8 @@ class StatePlay(StateGame):
             pg.clock.schedule_interval(self._update, 1 / self.moving_per_second)
 
         if self._is_over():
-           self.game.set_state(StateGameOver(self.game))
+            pg.clock.unschedule(self._update)
+            self.game.set_state(StateEnum.menu)
 
     def _eat_and_move(self) -> bool:
         grid = self.snake.position_grid()
